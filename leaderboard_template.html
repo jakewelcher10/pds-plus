@@ -197,6 +197,26 @@
 
   .bar-fill.below { background: var(--red); opacity: 0.75; }
 
+  .search-panel {
+    margin-bottom: 18px;
+  }
+
+  #searchBox {
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: #fffdf8;
+    color: var(--ink);
+  }
+
+  #searchBox:focus {
+    outline: none;
+    border-color: var(--brass);
+  }
+
   .empty {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
@@ -226,13 +246,17 @@
     </div>
   </header>
 
-  <div class="input-panel">
+  <div class="input-panel" id="inputPanel" style="display:none;">
     <label for="raw">Paste player_name / Team / PDS+ data (comma or tab separated, one pitcher per line)</label>
     <textarea id="raw" placeholder="Drew Rasmussen, MIL, 112.4&#10;Paul Skenes, PIT, 118.9&#10;..."></textarea>
     <div class="controls">
       <span class="hint">First line can optionally be a header row &mdash; it's detected automatically.</span>
       <button onclick="render()">Build Leaderboard</button>
     </div>
+  </div>
+
+  <div class="search-panel">
+    <input type="text" id="searchBox" placeholder="Search for a pitcher..." oninput="filterTable()">
   </div>
 
   <div id="table"></div>
@@ -317,27 +341,27 @@ function parseInput(text) {
   return parsed;
 }
 
-function render() {
-  const raw = document.getElementById('raw').value;
-  const data = parseInput(raw);
+let allData = [];
+let minVal = 100;
+let maxVal = 100;
+
+function renderTable(list) {
   const table = document.getElementById('table');
   const stamp = document.getElementById('stamp');
 
-  if (!data.length) {
-    table.innerHTML = '<div class="empty">No valid rows found yet. Paste name, team, and PDS+ above, one per line.</div>';
+  if (!list.length) {
+    table.innerHTML = '<div class="empty">No pitchers match that search.</div>';
     stamp.textContent = '';
     return;
   }
 
-  const max = Math.max(...data.map(d => d.pds), 100);
-  const min = Math.min(...data.map(d => d.pds), 100);
-  const span = Math.max(max - min, 1);
+  const span = Math.max(maxVal - minVal, 1);
 
   let html = '<div class="row head"><div>Rk</div><div>Pitcher</div><div style="text-align:right">PDS+</div><div style="text-align:right">Pctl</div><div>vs. League Mean</div></div>';
 
-  data.forEach((d, i) => {
+  list.forEach((d, i) => {
     const above = d.pds >= 100;
-    const pct = ((d.pds - min) / span) * 100;
+    const pct = ((d.pds - minVal) / span) * 100;
     const badge = d.team
       ? `<span class="team-badge" style="background:${teamColor(d.team)}">${d.team.toUpperCase()}</span>`
       : '';
@@ -352,10 +376,38 @@ function render() {
   });
 
   table.innerHTML = html;
-  stamp.textContent = `${data.length} pitchers · generated ${new Date().toLocaleDateString()}`;
+  stamp.textContent = `${list.length} of ${allData.length} pitchers · generated ${new Date().toLocaleDateString()}`;
+}
+
+function render() {
+  const raw = document.getElementById('raw').value;
+  allData = parseInput(raw);
+
+  maxVal = Math.max(...allData.map(d => d.pds), 100);
+  minVal = Math.min(...allData.map(d => d.pds), 100);
+
+  const searchBox = document.getElementById('searchBox');
+  if (searchBox) searchBox.value = '';
+
+  renderTable(allData);
+}
+
+function filterTable() {
+  const query = document.getElementById('searchBox').value.trim().toLowerCase();
+  if (!query) {
+    renderTable(allData);
+    return;
+  }
+  const filtered = allData.filter(d => d.name.toLowerCase().includes(query));
+  renderTable(filtered);
 }
 
 document.getElementById('raw').value = DEFAULT_DATA;
+
+if (new URLSearchParams(window.location.search).has('edit')) {
+  document.getElementById('inputPanel').style.display = 'block';
+}
+
 render();
 </script>
 </body>
