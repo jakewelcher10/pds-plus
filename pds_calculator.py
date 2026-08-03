@@ -17,6 +17,10 @@ END_DATE = date.today().isoformat()
 # Change this whenever you decide on your official qualifying rule.
 MIN_BATTERS_FACED = 150
 
+# Relievers rarely reach 150 batters faced in a season, so they get their
+# own, lower qualifying bar. Adjust this as you see fit.
+MIN_RELIEVER_BATTERS_FACED = 60
+
 # Threshold for the "starters with 80+ IP" highlight list.
 MIN_STARTER_IP = 80
 
@@ -343,9 +347,13 @@ def add_pds_scores(metrics: pd.DataFrame) -> pd.DataFrame:
         "GB%": 1,
     }
 
-    qualified = metrics.loc[
-        metrics["batters_faced"] >= MIN_BATTERS_FACED
-    ].copy()
+    is_starter = metrics["GS"] > 0
+    meets_threshold = np.where(
+        is_starter,
+        metrics["batters_faced"] >= MIN_BATTERS_FACED,
+        metrics["batters_faced"] >= MIN_RELIEVER_BATTERS_FACED,
+    )
+    qualified = metrics.loc[meets_threshold].copy()
 
     if qualified.empty:
         raise RuntimeError(
