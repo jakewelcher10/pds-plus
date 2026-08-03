@@ -197,6 +197,31 @@
 
   .bar-fill.below { background: var(--red); opacity: 0.75; }
 
+  .filter-panel {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--card);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+
+  .filter-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
   .search-panel {
     margin-bottom: 18px;
   }
@@ -253,6 +278,12 @@
       <span class="hint">First line can optionally be a header row &mdash; it's detected automatically.</span>
       <button onclick="render()">Build Leaderboard</button>
     </div>
+  </div>
+
+  <div class="filter-panel">
+    <button class="filter-btn active" data-role="ALL" onclick="setRoleFilter('ALL')">All</button>
+    <button class="filter-btn" data-role="SP" onclick="setRoleFilter('SP')">Starters</button>
+    <button class="filter-btn" data-role="RP" onclick="setRoleFilter('RP')">Relievers</button>
   </div>
 
   <div class="search-panel">
@@ -318,19 +349,25 @@ function parseInput(text) {
 
   let rows = lines.map(splitLine).map(cols => cols.map(c => c.trim()));
 
-  const hasTeamCol = rows[0] && rows[0].length >= 3;
+  const colCount = rows[0] ? rows[0].length : 0;
+  const hasRoleCol = colCount >= 4;
+  const hasTeamCol = colCount >= 3;
 
-  const lastIdx = hasTeamCol ? 2 : 1;
+  const lastIdx = colCount - 1;
   if (rows.length && isNaN(parseFloat(rows[0][lastIdx]))) {
     rows = rows.slice(1);
   }
 
+  const minCols = hasRoleCol ? 4 : (hasTeamCol ? 3 : 2);
+
   const parsed = rows
-    .filter(r => r.length >= (hasTeamCol ? 3 : 2) && !isNaN(parseFloat(r[lastIdx])))
-    .map(r => hasTeamCol
-      ? { name: toFirstLast(r[0]), team: r[1], pds: parseFloat(r[2]) }
-      : { name: toFirstLast(r[0]), team: '', pds: parseFloat(r[1]) }
-    )
+    .filter(r => r.length >= minCols && !isNaN(parseFloat(r[minCols - 1])))
+    .map(r => ({
+      name: toFirstLast(r[0]),
+      team: hasTeamCol ? r[1] : '',
+      role: hasRoleCol ? r[2].toUpperCase() : '',
+      pds: parseFloat(r[minCols - 1])
+    }))
     .sort((a, b) => b.pds - a.pds);
 
   const n = parsed.length;
@@ -344,6 +381,20 @@ function parseInput(text) {
 let allData = [];
 let minVal = 100;
 let maxVal = 100;
+let currentRoleFilter = 'ALL';
+
+function setRoleFilter(role) {
+  currentRoleFilter = role;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.role === role);
+  });
+  filterTable();
+}
+
+function getFilteredByRole() {
+  if (currentRoleFilter === 'ALL') return allData;
+  return allData.filter(d => d.role === currentRoleFilter);
+}
 
 function renderTable(list) {
   const table = document.getElementById('table');
@@ -389,17 +440,16 @@ function render() {
   const searchBox = document.getElementById('searchBox');
   if (searchBox) searchBox.value = '';
 
-  renderTable(allData);
+  renderTable(getFilteredByRole());
 }
 
 function filterTable() {
   const query = document.getElementById('searchBox').value.trim().toLowerCase();
-  if (!query) {
-    renderTable(allData);
-    return;
-  }
-  const filtered = allData.filter(d => d.name.toLowerCase().includes(query));
-  renderTable(filtered);
+  const roleFiltered = getFilteredByRole();
+  const finalFiltered = query
+    ? roleFiltered.filter(d => d.name.toLowerCase().includes(query))
+    : roleFiltered;
+  renderTable(finalFiltered);
 }
 
 document.getElementById('raw').value = DEFAULT_DATA;

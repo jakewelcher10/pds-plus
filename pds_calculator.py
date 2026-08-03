@@ -407,12 +407,13 @@ def write_html_leaderboard(
         print(f"Skipping HTML generation: {template_path} not found.")
         return
 
-    rows = leaderboard[["player_name", "Team", "PDS+"]].copy()
+    rows = leaderboard[["player_name", "Team", "GS", "PDS+"]].copy()
+    rows["Role"] = np.where(rows["GS"] > 0, "SP", "RP")
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     for _, row in rows.iterrows():
-        writer.writerow([row["player_name"], row["Team"], row["PDS+"]])
+        writer.writerow([row["player_name"], row["Team"], row["Role"], row["PDS+"]])
 
     csv_text = buffer.getvalue().strip()
 
