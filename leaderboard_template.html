@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDS+ Leaderboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital@0;1&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --paper: #efe6d3;
+    --ink: #1b2a4a;
+    --ink-soft: #4a5677;
+    --brass: #b8912a;
+    --brass-dim: #d8c48f;
+    --red: #8b2e2e;
+    --line: #c9bd9e;
+    --card: #f6f0e2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', serif;
+    padding: 40px 24px 80px;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  header {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 2px;
+    margin: 0;
+    line-height: 0.9;
+    color: var(--ink);
+  }
+
+  h1 span { color: var(--brass); }
+
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .input-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px;
+    margin-bottom: 32px;
+  }
+
+  .input-panel label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: #fffdf8;
+    color: var(--ink);
+    resize: vertical;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  button {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  button:hover { background: var(--brass); color: var(--ink); }
+
+  .row {
+    display: grid;
+    grid-template-columns: 34px 1fr 70px 66px 110px;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .percentile {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .row.head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+  }
+
+  .rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  .name {
+    font-size: 16px;
+  }
+
+  .score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    text-align: right;
+  }
+
+  .score.above { color: var(--brass); }
+  .score.below { color: var(--red); }
+
+  .bar-track {
+    height: 10px;
+    background: #e2d8bf;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--brass);
+  }
+
+  .bar-fill.below { background: var(--red); opacity: 0.75; }
+
+  .empty {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 30px 6px;
+    text-align: center;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+  }
+
+  footer {
+    margin-top: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>PDS<span>+</span></h1>
+      <div class="subtitle">Pitching Domination Score</div>
+    </div>
+  </header>
+
+  <div class="input-panel">
+    <label for="raw">Paste player_name / Team / PDS+ data (comma or tab separated, one pitcher per line)</label>
+    <textarea id="raw" placeholder="Drew Rasmussen, MIL, 112.4&#10;Paul Skenes, PIT, 118.9&#10;..."></textarea>
+    <div class="controls">
+      <span class="hint">First line can optionally be a header row &mdash; it's detected automatically.</span>
+      <button onclick="render()">Build Leaderboard</button>
+    </div>
+  </div>
+
+  <div id="table"></div>
+
+  <footer id="stamp"></footer>
+</div>
+
+<script>
+const DEFAULT_DATA = `__PDS_DATA_PLACEHOLDER__`;
+
+const TEAM_COLORS = {
+  ARI: '#A71930', AZ: '#A71930', ATL: '#13274F', BAL: '#DF4601', BOS: '#BD3039', CHC: '#0E3386',
+  CWS: '#27251F', CIN: '#C6011F', CLE: '#00385D', COL: '#333366', DET: '#0C2C56',
+  HOU: '#002D62', KC: '#004687', LAA: '#BA0021', LAD: '#005A9C', MIA: '#00A3E0',
+  MIL: '#12284B', MIN: '#002B5C', NYM: '#002D72', NYY: '#003087', ATH: '#003831',
+  OAK: '#003831', PHI: '#E81828', PIT: '#27251F', SD: '#2F241D', SF: '#FD5A1E',
+  SEA: '#0C2C56', STL: '#C41E3A', TB: '#092C5C', TEX: '#003278', TOR: '#134A8E',
+  WSH: '#AB0003'
+};
+
+function teamColor(team) {
+  if (!team) return '#8a8375';
+  return TEAM_COLORS[team.toUpperCase()] || '#8a8375';
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function toFirstLast(name) {
+  const parts = name.split(',').map(p => p.trim());
+  if (parts.length === 2 && parts[0] && parts[1]) {
+    return `${parts[1]} ${parts[0]}`;
+  }
+  return name;
+}
+
+function parseInput(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+
+  const splitLine = (line) => line.includes('\t') ? line.split('\t') : splitCSVLine(line);
+
+  let rows = lines.map(splitLine).map(cols => cols.map(c => c.trim()));
+
+  const hasTeamCol = rows[0] && rows[0].length >= 3;
+
+  const lastIdx = hasTeamCol ? 2 : 1;
+  if (rows.length && isNaN(parseFloat(rows[0][lastIdx]))) {
+    rows = rows.slice(1);
+  }
+
+  const parsed = rows
+    .filter(r => r.length >= (hasTeamCol ? 3 : 2) && !isNaN(parseFloat(r[lastIdx])))
+    .map(r => hasTeamCol
+      ? { name: toFirstLast(r[0]), team: r[1], pds: parseFloat(r[2]) }
+      : { name: toFirstLast(r[0]), team: '', pds: parseFloat(r[1]) }
+    )
+    .sort((a, b) => b.pds - a.pds);
+
+  const n = parsed.length;
+  parsed.forEach((d, i) => {
+    d.percentile = n > 1 ? Math.round(((n - 1 - i) / (n - 1)) * 100) : 100;
+  });
+
+  return parsed;
+}
+
+function render() {
+  const raw = document.getElementById('raw').value;
+  const data = parseInput(raw);
+  const table = document.getElementById('table');
+  const stamp = document.getElementById('stamp');
+
+  if (!data.length) {
+    table.innerHTML = '<div class="empty">No valid rows found yet. Paste name, team, and PDS+ above, one per line.</div>';
+    stamp.textContent = '';
+    return;
+  }
+
+  const max = Math.max(...data.map(d => d.pds), 100);
+  const min = Math.min(...data.map(d => d.pds), 100);
+  const span = Math.max(max - min, 1);
+
+  let html = '<div class="row head"><div>Rk</div><div>Pitcher</div><div style="text-align:right">PDS+</div><div style="text-align:right">Pctl</div><div>vs. League Mean</div></div>';
+
+  data.forEach((d, i) => {
+    const above = d.pds >= 100;
+    const pct = ((d.pds - min) / span) * 100;
+    const badge = d.team
+      ? `<span class="team-badge" style="background:${teamColor(d.team)}">${d.team.toUpperCase()}</span>`
+      : '';
+    html += `
+      <div class="row">
+        <div class="rank">${i + 1}</div>
+        <div class="name-cell"><span class="name">${d.name}</span>${badge}</div>
+        <div class="score ${above ? 'above' : 'below'}">${d.pds.toFixed(1)}</div>
+        <div class="percentile">${d.percentile}th</div>
+        <div class="bar-track"><div class="bar-fill ${above ? '' : 'below'}" style="width:${Math.max(pct, 4)}%"></div></div>
+      </div>`;
+  });
+
+  table.innerHTML = html;
+  stamp.textContent = `${data.length} pitchers · generated ${new Date().toLocaleDateString()}`;
+}
+
+document.getElementById('raw').value = DEFAULT_DATA;
+render();
+</script>
+</body>
+</html>
