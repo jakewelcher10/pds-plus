@@ -382,13 +382,12 @@ def add_pds_scores(metrics: pd.DataFrame) -> pd.DataFrame:
 
         if pd.isna(population_sd) or population_sd == 0:
             qualified[f"z_{metric}"] = np.nan
+            qualified[f"z_{metric}_uncapped"] = np.nan
         else:
-            qualified[f"z_{metric}"] = (
-                direction * (qualified[metric] - mean) / population_sd
-            )
-
-        # Prevent one extreme result from overpowering the entire score.
-        qualified[f"z_{metric}"] = qualified[f"z_{metric}"].clip(-3, 3)
+            raw_z = direction * (qualified[metric] - mean) / population_sd
+            qualified[f"z_{metric}_uncapped"] = raw_z
+            # Prevent one extreme result from overpowering the entire score.
+            qualified[f"z_{metric}"] = raw_z.clip(-3, 3)
 
     qualified["Missing Bats"] = qualified[
         ["z_K%", "z_SwStr%", "z_CSW%"]
@@ -407,8 +406,27 @@ def add_pds_scores(metrics: pd.DataFrame) -> pd.DataFrame:
     ].mean(axis=1)
 
     qualified["PDS+"] = 100 + (10 * qualified["Raw PDS"])
-
     qualified["PDS+"] = qualified["PDS+"].round(1)
+
+    # Uncapped comparison version, for testing whether clipping distorts the scale.
+    qualified["Missing Bats (uncapped)"] = qualified[
+        ["z_K%_uncapped", "z_SwStr%_uncapped", "z_CSW%_uncapped"]
+    ].mean(axis=1)
+
+    qualified["Command (uncapped)"] = qualified[
+        ["z_BB%_uncapped", "z_F-Strike%_uncapped", "z_Chase%_uncapped"]
+    ].mean(axis=1)
+
+    qualified["Contact Management (uncapped)"] = qualified[
+        ["z_xwOBA_uncapped", "z_Barrel%_uncapped", "z_GB%_uncapped"]
+    ].mean(axis=1)
+
+    qualified["Raw PDS (uncapped)"] = qualified[
+        ["Missing Bats (uncapped)", "Command (uncapped)", "Contact Management (uncapped)"]
+    ].mean(axis=1)
+
+    qualified["PDS+ (uncapped)"] = 100 + (10 * qualified["Raw PDS (uncapped)"])
+    qualified["PDS+ (uncapped)"] = qualified["PDS+ (uncapped)"].round(1)
     qualified["Last Updated"] = END_DATE
 
     qualified = qualified.sort_values("PDS+", ascending=False)
@@ -486,6 +504,7 @@ def main() -> None:
         "Contact Management",
         "Raw PDS",
         "PDS+",
+        "PDS+ (uncapped)",
         "Last Updated",
     ]
 
