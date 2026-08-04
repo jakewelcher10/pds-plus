@@ -242,6 +242,32 @@
     border-color: var(--brass);
   }
 
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap input {
+    padding-right: 34px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .clear-btn:hover {
+    color: var(--ink);
+  }
+
   .empty {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
@@ -287,7 +313,10 @@
   </div>
 
   <div class="search-panel">
-    <input type="text" id="searchBox" placeholder="Search for a pitcher..." oninput="filterTable()">
+    <div class="search-wrap">
+      <input type="text" id="searchBox" placeholder="Search for a pitcher..." oninput="filterTable()">
+      <button id="clearSearch" class="clear-btn" onclick="clearSearch()" style="display:none;">&times;</button>
+    </div>
   </div>
 
   <div id="table"></div>
@@ -445,11 +474,17 @@ function render() {
 
 function filterTable() {
   const query = document.getElementById('searchBox').value.trim().toLowerCase();
+  document.getElementById('clearSearch').style.display = query ? 'block' : 'none';
   const roleFiltered = getFilteredByRole();
   const finalFiltered = query
     ? roleFiltered.filter(d => d.name.toLowerCase().includes(query))
     : roleFiltered;
   renderTable(finalFiltered);
+}
+
+function clearSearch() {
+  document.getElementById('searchBox').value = '';
+  filterTable();
 }
 
 document.getElementById('raw').value = DEFAULT_DATA;
