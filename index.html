@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDS+ Leaderboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital@0;1&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --paper: #efe6d3;
+    --ink: #1b2a4a;
+    --ink-soft: #4a5677;
+    --brass: #b8912a;
+    --brass-dim: #d8c48f;
+    --red: #8b2e2e;
+    --line: #c9bd9e;
+    --card: #f6f0e2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', serif;
+    padding: 40px 24px 80px;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  header {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 2px;
+    margin: 0;
+    line-height: 0.9;
+    color: var(--ink);
+  }
+
+  h1 span { color: var(--brass); }
+
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .input-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px;
+    margin-bottom: 32px;
+  }
+
+  .input-panel label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: #fffdf8;
+    color: var(--ink);
+    resize: vertical;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  button {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  button:hover { background: var(--brass); color: var(--ink); }
+
+  .row {
+    display: grid;
+    grid-template-columns: 34px 1fr 70px 66px 110px;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .percentile {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .row.head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+  }
+
+  .rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  .name {
+    font-size: 16px;
+  }
+
+  .score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    text-align: right;
+  }
+
+  .score.above { color: var(--brass); }
+  .score.below { color: var(--red); }
+
+  .bar-track {
+    height: 10px;
+    background: #e2d8bf;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--brass);
+  }
+
+  .bar-fill.below { background: var(--red); opacity: 0.75; }
+
+  .filter-panel {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--card);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+
+  .filter-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .search-panel {
+    margin-bottom: 18px;
+  }
+
+  #searchBox {
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: #fffdf8;
+    color: var(--ink);
+  }
+
+  #searchBox:focus {
+    outline: none;
+    border-color: var(--brass);
+  }
+
+  .empty {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 30px 6px;
+    text-align: center;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+  }
+
+  footer {
+    margin-top: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>PDS<span>+</span></h1>
+      <div class="subtitle">Pitching Domination Score</div>
+    </div>
+  </header>
+
+  <div class="input-panel" id="inputPanel" style="display:none;">
+    <label for="raw">Paste player_name / Team / PDS+ data (comma or tab separated, one pitcher per line)</label>
+    <textarea id="raw" placeholder="Drew Rasmussen, MIL, 112.4&#10;Paul Skenes, PIT, 118.9&#10;..."></textarea>
+    <div class="controls">
+      <span class="hint">First line can optionally be a header row &mdash; it's detected automatically.</span>
+      <button onclick="render()">Build Leaderboard</button>
+    </div>
+  </div>
+
+  <div class="filter-panel">
+    <button class="filter-btn active" data-role="ALL" onclick="setRoleFilter('ALL')">All</button>
+    <button class="filter-btn" data-role="SP" onclick="setRoleFilter('SP')">Starters</button>
+    <button class="filter-btn" data-role="RP" onclick="setRoleFilter('RP')">Relievers</button>
+  </div>
+
+  <div class="search-panel">
+    <input type="text" id="searchBox" placeholder="Search for a pitcher..." oninput="filterTable()">
+  </div>
+
+  <div id="table"></div>
+
+  <footer id="stamp"></footer>
+</div>
+
+<script>
+const DEFAULT_DATA = `"Misiorowski, Jacob",MIL,SP,119.3
+"Hader, Josh",HOU,RP,118.8
+"Miller, Mason",SD,RP,117.2
+"Morejon, Adrian",SD,RP,117.2
+"Scott, Tanner",LAD,RP,115.2
+"Lee, Dylan",ATL,RP,114.6
+"Duran, Jhoan",PHI,RP,114.3
+"Varland, Louis",TOR,RP,113.6
+"Skubal, Tarik",DET,SP,113.2
+"Guerrero, Tyron",BOS,RP,112.6
+"Morillo, Juan",AZ,RP,112.6
+"Sánchez, Cristopher",PHI,SP,112.1
+"Garcia, Brandyn",AZ,RP,112.0
+"Sommers, Drew",DET,RP,111.9
+"Whitlock, Garrett",BOS,RP,111.8
+"Iglesias, Raisel",ATL,RP,111.6
+"Bednar, David",NYY,RP,111.5
+"Muñoz, Andrés",SEA,RP,111.1
+"Megill, Trevor",MIL,RP,110.8
+"Sale, Chris",ATL,SP,110.4
+"Hoffman, Jeff",TOR,RP,110.3
+"Bowlan, Jonathan",PHI,RP,110.2
+"Taylor, Grant",CWS,SP,110.0
+"Wheeler, Zack",PHI,SP,109.9
+"Cease, Dylan",TOR,SP,109.7
+"Rodriguez, Bradgley",SD,SP,109.5
+"Latz, Jacob",TEX,SP,109.0
+"Morgan, David",SD,RP,108.8
+"Luzardo, Jesús",PHI,SP,108.8
+"Baker, Bryan",TB,RP,108.7
+"Ashcraft, Braxton",PIT,SP,108.5
+"Zuber, Tyler",MIA,RP,108.5
+"Criswell, Cooper",SEA,RP,108.3
+"Williams, Devin",NYM,RP,108.3
+"Headrick, Brent",NYY,RP,108.1
+"Webb, Jacob",CHC,RP,107.9
+"Helsley, Ryan",BAL,RP,107.9
+"Slaten, Justin",BOS,RP,107.9
+"Leiter Jr., Mark",ATH,RP,107.8
+"Eovaldi, Nathan",TEX,SP,107.8
+"Booser, Cam",TB,RP,107.7
+"Weaver, Luke",NYM,RP,107.6
+"Montgomery, Mason",PIT,SP,107.6
+"Suarez, Robert",ATL,RP,107.6
+"Cano, Yennier",BAL,RP,107.4
+"Vest, Will",DET,RP,107.4
+"Harrison, Kyle",MIL,SP,107.3
+"Wells, Tyler",BAL,RP,107.3
+"Ashby, Aaron",MIL,SP,107.1
+"Schlittler, Cam",NYY,SP,107.0
+"Rasmussen, Drew",TB,SP,106.9
+"Ohtani, Shohei",LAD,SP,106.9
+"Dreyer, Jack",LAD,SP,106.8
+"Williams, Gavin",CLE,SP,106.7
+"deGrom, Jacob",TEX,SP,106.7
+"Dion, Will",CLE,RP,106.5
+"Alexander, Tyler",TEX,SP,106.5
+"Chapman, Aroldis",BOS,RP,106.5
+"Antone, Tejay",CIN,RP,106.5
+"Uribe, Abner",MIL,RP,106.4
+"Miller, Bryce",SEA,SP,106.4
+"Henderson, Logan",MIL,SP,106.3
+"Kelly, Kevin",TB,RP,106.2
+"Natera Jr., Samy",LAA,RP,106.1
+"Kittredge, Andrew",BAL,RP,106.0
+"Loáisiga, Jonathan",AZ,RP,106.0
+"Brazobán, Huascar",NYM,SP,105.9
+"Anderson, Drew",DET,SP,105.9
+"Rucker, Michael",SEA,RP,105.7
+"Gilbert, Logan",SEA,SP,105.7
+"Skenes, Paul",PIT,SP,105.7
+"Bennett, Jake",BOS,SP,105.7
+"De Los Santos, Enyel",HOU,RP,105.7
+"Yates, Kirby",LAA,RP,105.6
+"Jax, Griffin",TB,SP,105.5
+"Waguespack, Jacob",DET,RP,105.4
+"Tolle, Payton",BOS,SP,105.4
+"Drohan, Shane",MIL,SP,105.3
+"Ferguson, Tyler",CHC,RP,105.3
+"Woodruff, Brandon",MIL,SP,105.1
+"Ashcraft, Graham",CIN,RP,105.0
+"Weissert, Greg",BOS,RP,105.0
+"Holderman, Colin",CLE,RP,104.9
+"Fuentes, Didier",ATL,SP,104.8
+"Yamamoto, Yoshinobu",LAD,SP,104.8
+"Smith, Cade",CLE,RP,104.8
+"Gray, Peyton",TEX,RP,104.7
+"Bender, Anthony",MIA,RP,104.7
+"Nance, Tommy",MIN,RP,104.7
+"Miles, Spencer",TOR,SP,104.7
+"Woo, Bryan",SEA,SP,104.7
+"Okert, Steven",HOU,SP,104.5
+"Rogers, Tyler",TOR,RP,104.4
+"Suarez, Ranger",BOS,SP,104.4
+"Kilian, Caleb",SF,RP,104.4
+"Thompson, Ryan",AZ,RP,104.4
+"Garcia, Rico",BAL,RP,104.3
+"Little, Brendon",TOR,RP,104.3
+"Mize, Casey",DET,SP,104.1
+"Bachman, Sam",LAA,RP,104.1
+"Detmers, Reid",LAA,SP,104.1
+"Nunez, Anthony",BAL,RP,104.1
+"Soto, Gregory",PIT,RP,104.1
+"Fluharty, Mason",TOR,SP,104.0
+"Hurt, Kyle",LAD,SP,103.9
+"Adam, Jason",SD,RP,103.9
+"Vesia, Alex",LAD,RP,103.8
+"Messick, Parker",CLE,SP,103.8
+"Mayza, Tim",PHI,SP,103.8
+"Alvarado, José",PHI,RP,103.8
+"Ribalta, Orlando",WSH,RP,103.8
+"Cruz, Fernando",NYY,RP,103.7
+"Rogers, Trevor",BAL,SP,103.7
+"Burns, Chase",CIN,SP,103.7
+"Ginkel, Kevin",AZ,RP,103.7
+"Burke, Sean",CWS,SP,103.7
+"Fried, Max",NYY,SP,103.7
+"Soriano, George",STL,RP,103.7
+"Henriquez, Edgardo",LAD,SP,103.6
+"Kirby, George",SEA,SP,103.5
+"Klein, Will",LAD,SP,103.5
+"Meyer, Max",MIA,SP,103.4
+"Eisert, Brandon",PIT,SP,103.4
+"Matsui, Yuki",SD,RP,103.4
+"Gibson, Cade",MIA,RP,103.4
+"Cleavinger, Garrett",TB,RP,103.4
+"Ryan, Joe",MIN,SP,103.4
+"Seymour, Ian",TB,SP,103.3
+"Perkins, Jack",ATH,SP,103.3
+"Imanaga, Shota",CHC,SP,103.3
+"Wolfram, Grant",BAL,RP,103.3
+"Suarez, José",ATH,SP,103.2
+"Hoppe, Alex",SEA,RP,103.2
+"Webb, Logan",SF,SP,103.1
+"Brown, Ben",CHC,SP,103.1
+"Cavalli, Cade",WSH,SP,103.1
+"Raley, Brooks",NYM,RP,102.8
+"Senzatela, Antonio",COL,RP,102.8
+"Sterner, Justin",ATH,RP,102.7
+"Richards, Trevor",CWS,RP,102.7
+"Gausman, Kevin",TOR,SP,102.7
+"Cruz, Steven",KC,SP,102.7
+"Ferrer, José A.",SEA,RP,102.7
+"Lynch IV, Daniel",KC,RP,102.7
+"Gray, Sonny",BOS,SP,102.7
+"Sheehan, Emmet",LAD,SP,102.6
+"Lord, Brad",WSH,SP,102.6
+"Holton, Tyler",DET,SP,102.5
+"Dodd, Dylan",ATL,RP,102.5
+"Jones, Jared",PIT,SP,102.4
+"Brash, Matt",SEA,RP,102.4
+"Winn, Keaton",SF,RP,102.4
+"Holmes, Clay",NYM,SP,102.4
+"Thielbar, Caleb",CHC,RP,102.3
+"O'Brien, Riley",STL,RP,102.2
+"Treinen, Blake",LAD,RP,102.2
+"McLean, Nolan",NYM,SP,102.2
+"Hart, Kyle",SD,SP,102.1
+"Morris, Andrew",MIN,SP,102.0
+"Morán, Jovani",BOS,SP,102.0
+"McClanahan, Shane",TB,SP,102.0
+"Griffin, Foster",WSH,SP,102.0
+"Adams, Travis",MIN,RP,102.0
+"Weathers, Ryan",NYY,SP,102.0
+"Fermin, José",LAA,RP,102.0
+"Melton, Troy",DET,SP,101.9
+"Junis, Jakob",TEX,SP,101.8
+"Wilson, Bryse",MIL,RP,101.8
+"Ureña, Walbert",LAA,SP,101.8
+"Soriano, José",LAA,SP,101.7
+"Newcomb, Sean",CWS,SP,101.7
+"Suter, Brent",LAA,SP,101.7
+"Garcia, Julian",CIN,RP,101.7
+"Boyd, Matthew",CHC,SP,101.6
+"Patrick, Chad",MIL,SP,101.6
+"Palencia, Daniel",CHC,RP,101.6
+"Soroka, Michael",AZ,SP,101.6
+"Silseth, Chase",TEX,RP,101.6
+"Estrada, Jeremiah",SD,RP,101.5
+"Roupp, Landen",SF,SP,101.5
+"Ramírez, Yohan",PIT,SP,101.5
+"King, John",MIA,SP,101.5
+"Cantillo, Joey",CLE,SP,101.5
+"Alcantara, Sandy",MIA,SP,101.4
+"Nola, Aaron",PHI,SP,101.3
+"Young, Brandon",BAL,SP,101.2
+"De Jesus, Enmanuel",DET,RP,101.2
+"Winn, Cole",TEX,SP,101.2
+"Pallante, Andre",STL,SP,101.1
+"Hudson, Bryan",CWS,SP,101.1
+"Cole, Gerrit",NYY,SP,101.0
+"Bachar, Lake",MIA,SP,101.0
+"McDonald, Trevor",SF,SP,101.0
+"Zeferjahn, Ryan",LAA,RP,101.0
+"Speier, Gabe",SEA,RP,100.9
+"Dotel, Wilber",PIT,RP,100.8
+"Sisk, Evan",PIT,RP,100.8
+"Sasaki, Roki",LAD,SP,100.7
+"Valdez, Framber",DET,SP,100.7
+"Yesavage, Trey",TOR,SP,100.7
+"Mantiply, Joe",TOR,RP,100.7
+"Fairbanks, Pete",MIA,SP,100.6
+"Pérez, Eury",MIA,SP,100.6
+"Nardi, Andrew",MIA,RP,100.6
+"Ahlstrom, Robby",TEX,RP,100.5
+"Romano, Jordan",COL,RP,100.5
+"Petersen, Michael",MIA,RP,100.5
+"Jump, Gage",ATH,SP,100.5
+"Bazardo, Eduard",SEA,RP,100.4
+"Gasser, Robert",MIL,SP,100.4
+"May, Dustin",STL,SP,100.4
+"Sulser, Cole",TB,SP,100.3
+"Freeland, Kyle",COL,SP,100.3
+"Lambert, Peter",HOU,SP,100.3
+"Mejia, Juan",COL,SP,100.3
+"Jameson, Drey",AZ,RP,100.2
+"Pfaadt, Brandon",AZ,SP,100.2
+"Borucki, Ryan",SF,RP,100.0
+"Yoho, Craig",CLE,RP,100.0
+"Martin, Davis",CWS,SP,100.0
+"Bernardino, Brennan",COL,SP,99.9
+"Romero, JoJo",STL,RP,99.9
+"Miller, Erik",SF,RP,99.9
+"Parker, Mitchell",WSH,RP,99.9
+"Wrobleski, Justin",LAD,SP,99.9
+"Davis, Tyler",CWS,RP,99.8
+"Hill, Jaden",COL,RP,99.8
+"Kremer, Dean",BAL,SP,99.8
+"Wacha, Michael",KC,SP,99.7
+"Blackburn, Paul",NYY,SP,99.7
+"Doval, Camilo",PIT,RP,99.7
+"Keller, Brad",PHI,RP,99.7
+"Englert, Mason",TB,SP,99.7
+"Smith, Dylan",SF,RP,99.7
+"Gaddis, Hunter",CLE,RP,99.6
+"Rodón, Carlos",NYY,SP,99.6
+"Prielipp, Connor",MIN,SP,99.6
+"Wilcox, Cole",SEA,RP,99.5
+"Ginn, J.T.",ATH,SP,99.5
+"Phillips, Tyler",MIA,SP,99.5
+"Scott, Christian",NYM,SP,99.5
+"Peralta, Wandy",SD,SP,99.5
+"Bello, Brayan",BOS,SP,99.4
+"Gore, MacKenzie",TEX,SP,99.4
+"Warren, Will",NYY,SP,99.4
+"Kerkering, Orion",PHI,RP,99.2
+"Brown, Hunter",HOU,SP,99.2
+"Legumina, Casey",TB,SP,99.1
+"Castillo, Luis",SEA,SP,99.1
+"Early, Connelly",BOS,SP,99.1
+"Peralta, Freddy",NYM,SP,99.1
+"Hentges, Sam",SF,RP,99.1
+"Rocker, Kumar",TEX,SP,99.0
+"Faucher, Calvin",MIA,RP,98.9
+"Dollander, Chase",COL,SP,98.8
+"Chivilli, Angel",NYY,RP,98.8
+"Alvarez, Andrew",WSH,SP,98.8
+"Fisher, Braydon",TOR,SP,98.8
+"Elder, Bryce",ATL,SP,98.7
+"Montero, Keider",DET,SP,98.7
+"Aleman, Franco",CLE,RP,98.7
+"Hancock, Emerson",SEA,SP,98.6
+"Bradish, Kyle",BAL,SP,98.6
+"Pérez, Cionel",NYM,SP,98.5
+"Castaño, Blas",COL,RP,98.5
+"Burke, Brock",CIN,RP,98.5
+"Clarke, Taylor",AZ,RP,98.5
+"Blubaugh, AJ",HOU,RP,98.5
+"King, Michael",SD,SP,98.4
+"Teng, Kai-Wei",HOU,SP,98.4
+"Beeter, Clayton",WSH,RP,98.4
+"Peterson, David",CHC,SP,98.3
+"King, Bryan",HOU,RP,98.3
+"Stanek, Ryne",STL,RP,98.2
+"Moll, Sam",CIN,RP,98.2
+"Sabrowski, Erik",CLE,RP,98.1
+"Martinez, Nick",TB,SP,98.1
+"Minter, A.J.",MIN,RP,98.1
+"Hill, Tim",NYY,RP,98.1
+"Festa, Matt",CLE,RP,98.1
+"Gusto, Ryan",MIA,SP,98.1
+"Baz, Shane",BAL,SP,98.0
+"Anderson, Grant",MIL,RP,98.0
+"Yarbrough, Ryan",NYY,SP,98.0
+"Pérez, Martín",ATL,SP,98.0
+"Bibee, Tanner",CLE,SP,98.0
+"Pagán, Emilio",CIN,RP,97.9
+"Alvarado, Elvis",ATH,RP,97.7
+"Bird, Jake",NYY,RP,97.7
+"Paddack, Chris",TEX,SP,97.7
+"Bradley, Taj",MIN,SP,97.7
+"Mlodzinski, Carmen",PIT,SP,97.7
+"Hurter, Brant",DET,RP,97.6
+"Burrows, Mike",HOU,SP,97.6
+"Severino, Luis",ATH,SP,97.6
+"Liberatore, Matthew",STL,SP,97.6
+"Bruihl, Justin",STL,RP,97.6
+"Mahle, Tyler",SF,SP,97.5
+"Morgan, Eli",KC,RP,97.5
+"Kay, Anthony",CWS,SP,97.4
+"Orze, Eric",MIN,RP,97.4
+"Harris, Hogan",ATH,RP,97.4
+"Jansen, Kenley",DET,RP,97.3
+"Cecconi, Slade",CLE,SP,97.3
+"Singer, Brady",CIN,SP,97.3
+"Matthews, Zebby",MIN,SP,97.3
+"Cameron, Noah",KC,SP,97.3
+"Buehler, Walker",SD,SP,97.3
+"Manaea, Sean",NYM,SP,97.3
+"Beeks, Jalen",TEX,RP,97.3
+"Holmes, Grant",ATL,SP,97.3
+"Gordon, Tanner",COL,SP,97.3
+"Banda, Anthony",MIN,RP,97.1
+"Scholtens, Jesse",TB,SP,97.1
+"Laweryson, Cody",MIN,RP,97.1
+"Davila, Nick",SEA,RP,97.1
+"Johnson, Pierce",CIN,RP,97.1
+"Shugart, Chase",PHI,RP,97.1
+"Bubic, Kris",KC,SP,97.1
+"Medina, Luis",ATH,SP,97.1
+"Kuhnel, Joel",MIL,RP,97.1
+"Rolison, Ryan",CHC,SP,97.1
+"Maton, Phil",CHC,RP,97.0
+"Seabold, Connor",KC,RP,96.9
+"Abreu, Bryan",HOU,RP,96.8
+"Junk, Janson",MIA,SP,96.8
+"Herrin, Tim",CLE,RP,96.8
+"Cabrera, Edward",CHC,SP,96.7
+"Strider, Spencer",ATL,SP,96.7
+"Rogers, Taylor",MIN,RP,96.6
+"Sewald, Paul",AZ,RP,96.6
+"Painter, Andrew",PHI,SP,96.6
+"Brubaker, JT",SF,RP,96.5
+"Kolek, Stephen",KC,SP,96.5
+"Chandler, Bubba",PIT,SP,96.5
+"Milner, Hoby",CHC,RP,96.5
+"Leiter, Jack",TEX,SP,96.4
+"Kinley, Tyler",ATL,RP,96.4
+"Watson, Ryan",BOS,RP,96.3
+"Barlow, Scott",ATH,RP,96.3
+"Thornton, Trent",CHC,RP,96.3
+"Schultz, Paxton",WSH,SP,96.3
+"Farris, Mitch",LAA,RP,96.2
+"Lange, Alex",KC,RP,96.2
+"Myers, Tobias",NYM,SP,96.2
+"Ober, Bailey",MIN,SP,96.1
+"Rea, Colin",CHC,SP,96.1
+"Flaherty, Jack",DET,SP,96.1
+"Marinaccio, Ron",PIT,RP,95.9
+"Civale, Aaron",CHC,SP,95.8
+"Domínguez, Seranthony",CWS,RP,95.7
+"Finnegan, Kyle",DET,RP,95.7
+"Corbin, Patrick",TOR,SP,95.7
+"García, Luis",MIN,RP,95.7
+"Kimbrel, Craig",TB,RP,95.6
+"Schreiber, John",KC,RP,95.6
+"Agnos, Zach",COL,SP,95.6
+"Strahm, Matt",KC,RP,95.5
+"López, Reynaldo",ATL,SP,95.5
+"McCullers Jr., Lance",MIL,SP,95.3
+"Sproat, Brandon",MIL,SP,95.3
+"Santana, Dennis",PIT,RP,95.3
+"Imai, Tatsuya",HOU,SP,95.2
+"Abbott, Andrew",CIN,SP,95.2
+"Gallen, Zac",AZ,SP,95.2
+"Pearson, Nate",KC,RP,95.2
+"Nelson, Ryne",AZ,SP,95.1
+"Roberts, Ethan",CHC,RP,95.1
+"Armstrong, Shawn",CLE,RP,95.0
+"Keller, Mitch",PIT,SP,95.0
+"Johnson, Ryan",LAA,SP,95.0
+"Lopez, Jacob",ATH,SP,94.9
+"Avila, Luinder",KC,SP,94.9
+"Anderson, Shaun",LAA,RP,94.9
+"Fedde, Erick",CWS,SP,94.9
+"Ray, Robbie",SF,SP,94.9
+"Funderburk, Kody",MIN,RP,94.8
+"Rodriguez, Eduardo",AZ,SP,94.8
+"Lodolo, Nick",CIN,SP,94.8
+"Warren, Austin",NYM,SP,94.8
+"Leahy, Kyle",STL,SP,94.7
+"Canning, Griffin",SD,SP,94.7
+"Bassitt, Chris",BAL,SP,94.7
+"Lugo, Seth",KC,SP,94.6
+"Vodnik, Victor",COL,RP,94.6
+"Bido, Osvaldo",CWS,RP,94.5
+"Mikolas, Miles",WSH,SP,94.4
+"Woodford, Jake",CHC,RP,94.3
+"Bigge, Hunter",TB,RP,94.3
+"Quantrill, Cal",TEX,SP,94.2
+"Lowder, Rhett",CIN,SP,94.2
+"Gómez, Yoendrys",MIN,RP,94.2
+"Cornelio, Riley",WSH,RP,94.1
+"Springs, Jeffrey",ATH,SP,94.1
+"Kochanowicz, Jack",LAA,SP,94.1
+"Carrasco, Carlos",ATL,RP,94.1
+"Assad, Javier",CHC,SP,94.0
+"Walker, Ryan",SF,RP,93.8
+"Martin, Chris",TEX,RP,93.8
+"Feltner, Ryan",COL,SP,93.8
+"Paredes, Mike",MIN,SP,93.7
+"Johnson, Seth",PHI,RP,93.6
+"Erceg, Lucas",KC,RP,93.6
+"Schweitzer, Tyler",CWS,RP,93.6
+"Enns, Dietrich",BAL,RP,93.5
+"McGreevy, Michael",STL,SP,93.5
+"Kent, Zak",WSH,RP,93.5
+"Irvin, Jake",WSH,SP,93.5
+"Schultz, Noah",CWS,SP,93.4
+"Gage, Matt",SF,RP,93.4
+"Houser, Adrian",SF,SP,93.4
+"Bidois, Brandan",PIT,RP,93.3
+"Arrighetti, Spencer",HOU,SP,93.1
+"Taillon, Jameson",CHC,SP,93.0
+"Roycroft, Chris",TB,RP,92.9
+"Lorenzen, Michael",COL,SP,92.9
+"Lauer, Eric",LAD,SP,92.8
+"Suárez, Albert",BAL,RP,92.7
+"Santillan, Tony",CIN,RP,92.7
+"Ragans, Cole",KC,SP,92.6
+"Kelly, Merrill",AZ,SP,92.5
+"Matz, Steven",TB,SP,92.5
+"Quintana, Jose",COL,SP,92.5
+"Littell, Zack",WSH,SP,92.5
+"Bummer, Aaron",KC,RP,92.4
+"Aldegheri, Sam",LAA,SP,92.3
+"Varland, Gus",WSH,RP,92.2
+"Márquez, Germán",SD,SP,92.2
+"Lawrence, Justin",WSH,RP,92.2
+"Vásquez, Randy",SD,SP,92.1
+"Gibson, Trey",BAL,SP,92.1
+"Brogdon, Connor",CLE,RP,92.0
+"Bieber, Shane",TOR,SP,92.0
+"Collyer, Gavin",TEX,RP,91.9
+"Murray, Jayden",CHC,RP,91.4
+"Ritchie, JR",ATL,SP,91.1
+"Kelly, Zack",BOS,RP,90.9
+"Coulombe, Danny",BOS,RP,90.9
+"Poulin, PJ",WSH,SP,90.7
+"Hartlieb, Geoff",ATH,RP,90.6
+"Halvorsen, Seth",COL,RP,90.4
+"Hollowell, Gavin",CHC,RP,90.4
+"Svanson, Matt",STL,SP,90.3
+"Senga, Kodai",NYM,SP,90.3
+"Hernández, Jonathan",LAD,RP,90.2
+"Pallette, Peyton",CLE,RP,90.1
+"Topa, Justin",MIN,RP,89.9
+"Mears, Nick",KC,RP,89.9
+"Graceffo, Gordon",STL,RP,89.8
+"Mattson, Isaac",PIT,RP,88.7
+"Sugano, Tomoyuki",COL,SP,88.7
+"Barnes, Charlie",LAD,RP,88.4
+"Woods Richardson, Simeon",TOR,SP,87.6
+"Rodriguez, Grayson",LAA,SP,87.5
+"Henry, Cole",WSH,RP,87.0
+"Phillips, Connor",CIN,RP,86.9
+"Pomeranz, Drew",CHC,RP,86.8
+"Barco, Hunter",PIT,RP,86.2
+"Black, Mason",KC,RP,86.1
+"Franco, Jose",CIN,RP,86.0`;
+
+const TEAM_COLORS = {
+  ARI: '#A71930', AZ: '#A71930', ATL: '#13274F', BAL: '#DF4601', BOS: '#BD3039', CHC: '#0E3386',
+  CWS: '#27251F', CIN: '#C6011F', CLE: '#00385D', COL: '#333366', DET: '#0C2C56',
+  HOU: '#002D62', KC: '#004687', LAA: '#BA0021', LAD: '#005A9C', MIA: '#00A3E0',
+  MIL: '#12284B', MIN: '#002B5C', NYM: '#002D72', NYY: '#003087', ATH: '#003831',
+  OAK: '#003831', PHI: '#E81828', PIT: '#27251F', SD: '#2F241D', SF: '#FD5A1E',
+  SEA: '#0C2C56', STL: '#C41E3A', TB: '#092C5C', TEX: '#003278', TOR: '#134A8E',
+  WSH: '#AB0003'
+};
+
+function teamColor(team) {
+  if (!team) return '#8a8375';
+  return TEAM_COLORS[team.toUpperCase()] || '#8a8375';
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function toFirstLast(name) {
+  const parts = name.split(',').map(p => p.trim());
+  if (parts.length === 2 && parts[0] && parts[1]) {
+    return `${parts[1]} ${parts[0]}`;
+  }
+  return name;
+}
+
+function parseInput(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+
+  const splitLine = (line) => line.includes('\t') ? line.split('\t') : splitCSVLine(line);
+
+  let rows = lines.map(splitLine).map(cols => cols.map(c => c.trim()));
+
+  const colCount = rows[0] ? rows[0].length : 0;
+  const hasRoleCol = colCount >= 4;
+  const hasTeamCol = colCount >= 3;
+
+  const lastIdx = colCount - 1;
+  if (rows.length && isNaN(parseFloat(rows[0][lastIdx]))) {
+    rows = rows.slice(1);
+  }
+
+  const minCols = hasRoleCol ? 4 : (hasTeamCol ? 3 : 2);
+
+  const parsed = rows
+    .filter(r => r.length >= minCols && !isNaN(parseFloat(r[minCols - 1])))
+    .map(r => ({
+      name: toFirstLast(r[0]),
+      team: hasTeamCol ? r[1] : '',
+      role: hasRoleCol ? r[2].toUpperCase() : '',
+      pds: parseFloat(r[minCols - 1])
+    }))
+    .sort((a, b) => b.pds - a.pds);
+
+  const n = parsed.length;
+  parsed.forEach((d, i) => {
+    d.percentile = n > 1 ? Math.round(((n - 1 - i) / (n - 1)) * 100) : 100;
+  });
+
+  return parsed;
+}
+
+let allData = [];
+let minVal = 100;
+let maxVal = 100;
+let currentRoleFilter = 'ALL';
+
+function setRoleFilter(role) {
+  currentRoleFilter = role;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.role === role);
+  });
+  filterTable();
+}
+
+function getFilteredByRole() {
+  if (currentRoleFilter === 'ALL') return allData;
+  return allData.filter(d => d.role === currentRoleFilter);
+}
+
+function renderTable(list) {
+  const table = document.getElementById('table');
+  const stamp = document.getElementById('stamp');
+
+  if (!list.length) {
+    table.innerHTML = '<div class="empty">No pitchers match that search.</div>';
+    stamp.textContent = '';
+    return;
+  }
+
+  const span = Math.max(maxVal - minVal, 1);
+
+  let html = '<div class="row head"><div>Rk</div><div>Pitcher</div><div style="text-align:right">PDS+</div><div style="text-align:right">Pctl</div><div>vs. League Mean</div></div>';
+
+  list.forEach((d, i) => {
+    const above = d.pds >= 100;
+    const pct = ((d.pds - minVal) / span) * 100;
+    const badge = d.team
+      ? `<span class="team-badge" style="background:${teamColor(d.team)}">${d.team.toUpperCase()}</span>`
+      : '';
+    html += `
+      <div class="row">
+        <div class="rank">${i + 1}</div>
+        <div class="name-cell"><span class="name">${d.name}</span>${badge}</div>
+        <div class="score ${above ? 'above' : 'below'}">${d.pds.toFixed(1)}</div>
+        <div class="percentile">${d.percentile}th</div>
+        <div class="bar-track"><div class="bar-fill ${above ? '' : 'below'}" style="width:${Math.max(pct, 4)}%"></div></div>
+      </div>`;
+  });
+
+  table.innerHTML = html;
+  stamp.textContent = `${list.length} of ${allData.length} pitchers · generated ${new Date().toLocaleDateString()}`;
+}
+
+function render() {
+  const raw = document.getElementById('raw').value;
+  allData = parseInput(raw);
+
+  maxVal = Math.max(...allData.map(d => d.pds), 100);
+  minVal = Math.min(...allData.map(d => d.pds), 100);
+
+  const searchBox = document.getElementById('searchBox');
+  if (searchBox) searchBox.value = '';
+
+  renderTable(getFilteredByRole());
+}
+
+function filterTable() {
+  const query = document.getElementById('searchBox').value.trim().toLowerCase();
+  const roleFiltered = getFilteredByRole();
+  const finalFiltered = query
+    ? roleFiltered.filter(d => d.name.toLowerCase().includes(query))
+    : roleFiltered;
+  renderTable(finalFiltered);
+}
+
+document.getElementById('raw').value = DEFAULT_DATA;
+
+if (new URLSearchParams(window.location.search).has('edit')) {
+  document.getElementById('inputPanel').style.display = 'block';
+}
+
+render();
+</script>
+</body>
+</html>

@@ -130,6 +130,7 @@ def prepare_pitch_data(data: pd.DataFrame) -> pd.DataFrame:
         "inning_topbot",
         "home_team",
         "away_team",
+        "game_date",
     }
 
     missing = required_columns.difference(data.columns)
@@ -146,6 +147,7 @@ def prepare_pitch_data(data: pd.DataFrame) -> pd.DataFrame:
     )
     data["zone"] = pd.to_numeric(data["zone"], errors="coerce")
     data["inning"] = pd.to_numeric(data["inning"], errors="coerce")
+    data["game_date"] = pd.to_datetime(data["game_date"], errors="coerce")
     data["launch_speed_angle"] = pd.to_numeric(
         data["launch_speed_angle"], errors="coerce"
     )
@@ -286,10 +288,11 @@ def calculate_pitcher_metrics(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_teams(data: pd.DataFrame) -> pd.DataFrame:
-    """Assign each pitcher their most frequently pitched-for team this season."""
+    """Assign each pitcher their most recent team this season (handles trades)."""
     return (
-        data.groupby(["pitcher", "player_name"], dropna=False)["pitcher_team"]
-        .agg(lambda x: x.value_counts().idxmax())
+        data.sort_values("game_date")
+        .groupby(["pitcher", "player_name"], dropna=False)["pitcher_team"]
+        .last()
         .reset_index()
         .rename(columns={"pitcher_team": "Team"})
     )
@@ -408,7 +411,7 @@ def add_pds_scores(metrics: pd.DataFrame) -> pd.DataFrame:
 def write_html_leaderboard(
     leaderboard: pd.DataFrame,
     template_path: Path = Path("leaderboard_template.html"),
-    output_path: Path = Path("pds_leaderboard.html"),
+    output_path: Path = Path("index.html"),
 ) -> None:
     """Regenerate the shareable HTML leaderboard with this run's data baked in."""
     if not template_path.exists():
