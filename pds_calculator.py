@@ -430,7 +430,7 @@ def write_html_leaderboard(
 
     rows = leaderboard[["player_name", "Team", "GS", "G", "PDS+"]].copy()
     start_ratio = np.where(rows["G"] > 0, rows["GS"] / rows["G"], 0)
-    rows["Role"] = np.where(start_ratio >= 0.5, "SP", "RP")
+    rows["Role"] = np.where(start_ratio >= 0.4, "SP", "RP")
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
