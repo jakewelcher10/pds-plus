@@ -329,12 +329,22 @@ def calculate_playing_time(data: pd.DataFrame) -> pd.DataFrame:
         .rename(columns={"game_pk": "GS"})
     )
 
+    total_games = (
+        data.groupby(["pitcher", "player_name"], dropna=False)["game_pk"]
+        .nunique()
+        .reset_index()
+        .rename(columns={"game_pk": "G"})
+    )
+
     playing_time = outs.merge(
         starts, on=["pitcher", "player_name"], how="left"
+    ).merge(
+        total_games, on=["pitcher", "player_name"], how="left"
     )
     playing_time["GS"] = playing_time["GS"].fillna(0).astype(int)
+    playing_time["G"] = playing_time["G"].fillna(0).astype(int)
 
-    return playing_time[["pitcher", "player_name", "IP", "IP_decimal", "GS"]]
+    return playing_time[["pitcher", "player_name", "IP", "IP_decimal", "GS", "G"]]
 
 
 def add_pds_scores(metrics: pd.DataFrame) -> pd.DataFrame:
@@ -418,8 +428,9 @@ def write_html_leaderboard(
         print(f"Skipping HTML generation: {template_path} not found.")
         return
 
-    rows = leaderboard[["player_name", "Team", "GS", "PDS+"]].copy()
-    rows["Role"] = np.where(rows["GS"] > 0, "SP", "RP")
+    rows = leaderboard[["player_name", "Team", "GS", "G", "PDS+"]].copy()
+    start_ratio = np.where(rows["G"] > 0, rows["GS"] / rows["G"], 0)
+    rows["Role"] = np.where(start_ratio >= 0.5, "SP", "RP")
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
