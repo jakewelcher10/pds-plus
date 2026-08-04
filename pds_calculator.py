@@ -470,6 +470,7 @@ def main() -> None:
         "pitches",
         "IP",
         "GS",
+        "G",
         "Team",
         "K%",
         "SwStr%",
