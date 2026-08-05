@@ -21,7 +21,9 @@
     --ink-soft: #4a5677;
     --brass: #b8912a;
     --brass-dim: #d8c48f;
-    --red: #8b2e2e;
+    --red: #b8443f;
+    --grey: #7a7568;
+    --green: #3f7d4f;
     --line: #c9bd9e;
     --card: #f6f0e2;
   }
@@ -188,8 +190,13 @@
     text-align: right;
   }
 
-  .score.above { color: var(--brass); }
-  .score.below { color: var(--red); }
+  .score.tier-green { color: var(--green); }
+  .score.tier-grey { color: var(--grey); }
+  .score.tier-red { color: var(--red); }
+
+  .percentile.tier-green { color: var(--green); }
+  .percentile.tier-grey { color: var(--grey); }
+  .percentile.tier-red { color: var(--red); }
 
   .bar-track {
     height: 10px;
@@ -204,7 +211,9 @@
     background: var(--brass);
   }
 
-  .bar-fill.below { background: var(--red); opacity: 0.75; }
+  .bar-fill.tier-green { background: var(--green); }
+  .bar-fill.tier-grey { background: var(--grey); }
+  .bar-fill.tier-red { background: var(--red); opacity: 0.85; }
 
   .filter-panel {
     display: flex;
@@ -907,8 +916,14 @@ function renderTable(list) {
 
   let html = '<div class="row head"><div>Rk</div><div>Pitcher</div><div style="text-align:right">PDS+</div><div style="text-align:right">Pctl</div><div>vs. League Mean</div></div>';
 
+  const tierFor = (percentile) => {
+    if (percentile >= 61) return 'tier-green';
+    if (percentile >= 40) return 'tier-grey';
+    return 'tier-red';
+  };
+
   list.forEach((d, i) => {
-    const above = d.pds >= 100;
+    const tier = tierFor(d.percentile);
     const pct = ((d.pds - minVal) / span) * 100;
     const badge = d.team
       ? `<span class="team-badge" style="background:${teamColor(d.team)}">${d.team.toUpperCase()}</span>`
@@ -917,9 +932,9 @@ function renderTable(list) {
       <div class="row">
         <div class="rank">${i + 1}</div>
         <div class="name-cell"><span class="name">${d.name}</span>${badge}</div>
-        <div class="score ${above ? 'above' : 'below'}">${d.pds.toFixed(1)}</div>
-        <div class="percentile">${d.percentile}th</div>
-        <div class="bar-track"><div class="bar-fill ${above ? '' : 'below'}" style="width:${Math.max(pct, 4)}%"></div></div>
+        <div class="score ${tier}">${d.pds.toFixed(1)}</div>
+        <div class="percentile ${tier}">${d.percentile}th</div>
+        <div class="bar-track"><div class="bar-fill ${tier}" style="width:${Math.max(pct, 4)}%"></div></div>
       </div>`;
   });
 
