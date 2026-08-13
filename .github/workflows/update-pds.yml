@@ -32,6 +32,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pds_leaderboard.csv pds_leaderboard.html
+          git add pds_leaderboard.csv index.html
           git diff --cached --quiet || git commit -m "Update PDS+ leaderboard"
           git push
